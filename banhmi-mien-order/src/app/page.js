@@ -178,7 +178,7 @@ export default function BanhMiOrderPage() {
             PATU. BREAD
           </h1>
           <p className="text-sm text-[#E6EFD9] font-medium">
-            Bánh mì miến — Nóng giòn mỗi sáng
+            Bánh mì miến — Nóng giòn mỗi ngày
           </p>
         </div>
 
