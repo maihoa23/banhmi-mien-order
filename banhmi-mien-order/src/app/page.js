@@ -166,35 +166,35 @@ export default function BanhMiOrderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#D0E3B6] text-[#40240C] py-8 px-4 font-sans selection:bg-[#D87E33] selection:text-white">
+    <div className="min-h-screen bg-[#d0e3b6] text-[#40240c] py-8 px-4 font-sans selection:bg-[#d87e33] selection:text-white">
       <div className="max-w-lg mx-auto">
         {/* HEADER */}
-        <div className="text-center mb-8 bg-[#4B692E] py-7 px-4 rounded-[32px] shadow-lg border-4 border-[#FDF1C3] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-[#D87E33]"></div>
+        <div className="text-center mb-8 bg-[#4b692e] py-7 px-4 rounded-[32px] shadow-lg border-4 border-[#fdf1c3] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-[#d87e33]"></div>
           <h1
-            className="text-5xl font-black tracking-tight text-[#FDF1C3] drop-shadow-md mb-1"
+            className="text-5xl font-black tracking-tight text-[#fdf1c3] drop-shadow-md mb-1"
             style={{ fontFamily: "Impact, sans-serif" }}
           >
             PATU. BREAD
           </h1>
-          <p className="text-sm text-[#E6EFD9] font-medium">
+          <p className="text-sm text-[#e6efd9] font-medium">
             Bánh mì miến — Nóng giòn mỗi ngày
           </p>
         </div>
 
         {step === 3 && (
-          <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-[#4B692E]/10 text-center space-y-5">
-            <div className="w-16 h-16 bg-[#D0E3B6] text-[#4B692E] rounded-full flex items-center justify-center mx-auto mb-2">
+          <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-[#4b692e]/10 text-center space-y-5">
+            <div className="w-16 h-16 bg-[#d0e3b6] text-[#4b692e] rounded-full flex items-center justify-center mx-auto mb-2">
               <CheckCircle2 size={36} />
             </div>
-            <h2 className="text-2xl font-black text-[#4B692E] uppercase">
+            <h2 className="text-2xl font-black text-[#4b692e] uppercase">
               Đã gửi đơn tới bếp!
             </h2>
             <button
               onClick={() => {
                 window.location.reload();
               }}
-              className="mt-4 w-full py-3.5 rounded-xl bg-[#E6EFD9] text-[#4B692E] font-bold text-sm hover:bg-[#D0E3B6]"
+              className="mt-4 w-full py-3.5 rounded-xl bg-[#e6efd9] text-[#4b692e] font-bold text-sm hover:bg-[#d0e3b6]"
             >
               Đặt thêm đơn mới
             </button>
@@ -202,35 +202,35 @@ export default function BanhMiOrderPage() {
         )}
 
         {step === 2 && (
-          <div className="bg-white rounded-3xl p-6 shadow-lg border-2 border-[#4B692E]/10 space-y-5 text-center">
+          <div className="bg-white rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10 space-y-5 text-center">
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => setStep(1)}
-                className="flex items-center gap-1 text-sm font-bold text-[#6A8152] bg-[#E6EFD9] px-3 py-1.5 rounded-lg"
+                className="flex items-center gap-1 text-sm font-bold text-[#6a8152] bg-[#e6efd9] px-3 py-1.5 rounded-lg"
               >
                 <ArrowLeft size={16} /> Sửa đơn
               </button>
-              <span className="text-sm font-black text-[#D87E33] uppercase">
+              <span className="text-sm font-black text-[#d87e33] uppercase">
                 Thanh toán
               </span>
             </div>
 
-            <div className="bg-[#FDF1C3] p-4 rounded-2xl border-2 border-[#D87E33]/20 mx-auto max-w-sm">
+            <div className="bg-[#fdf1c3] p-4 rounded-2xl border-2 border-[#d87e33]/20 mx-auto max-w-sm">
               <img
                 src={qrUrl}
                 alt="Mã VietQR"
                 className="w-full mx-auto rounded-xl shadow-sm"
               />
-              <div className="mt-4 text-sm text-[#40240C] bg-white py-2.5 px-3 rounded-xl text-center">
+              <div className="mt-4 text-sm text-[#40240c] bg-white py-2.5 px-3 rounded-xl text-center">
                 <p>
                   Số tiền:{" "}
-                  <strong className="text-[#D87E33] text-lg">
+                  <strong className="text-[#d87e33] text-lg">
                     {totalAmount.toLocaleString("vi-VN")}đ
                   </strong>
                 </p>
                 <p>
                   Nội dung:{" "}
-                  <strong className="text-[#4B692E] font-mono bg-[#E6EFD9] px-2 py-0.5 rounded text-xs">
+                  <strong className="text-[#4b692e] font-mono bg-[#e6efd9] px-2 py-0.5 rounded text-xs">
                     {decodeURIComponent(transferContent)}
                   </strong>
                 </p>
@@ -238,19 +238,19 @@ export default function BanhMiOrderPage() {
             </div>
 
             {/* KHU VỰC TẢI ẢNH BILL */}
-            <div className="border-2 border-dashed border-[#4B692E]/30 rounded-2xl p-4 bg-[#F8F9FA] relative">
+            <div className="border-2 border-dashed border-[#4b692e]/30 rounded-2xl p-4 bg-[#f8f9fa] relative">
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-              <div className="flex flex-col items-center justify-center gap-2 pointer-events-none text-[#6A8152]">
+              <div className="flex flex-col items-center justify-center gap-2 pointer-events-none text-[#6a8152]">
                 <UploadCloud
                   size={32}
-                  className={fileName ? "text-[#D87E33]" : "text-[#4B692E]"}
+                  className={fileName ? "text-[#d87e33]" : "text-[#4b692e]"}
                 />
-                <span className="font-bold text-sm text-[#40240C]">
+                <span className="font-bold text-sm text-[#40240c]">
                   {fileName
                     ? "Đã chọn ảnh: " + fileName
                     : "Bấm vào đây để tải ảnh Bill lên"}
@@ -261,7 +261,7 @@ export default function BanhMiOrderPage() {
             <button
               onClick={handleConfirmAndSubmit}
               disabled={isLoading}
-              className="w-full py-4 rounded-2xl bg-[#4B692E] text-white font-black hover:bg-[#344E1D] transition flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-[#4b692e] text-white font-black hover:bg-[#344e1d] transition flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 "Đang gửi đơn..."
@@ -286,24 +286,24 @@ export default function BanhMiOrderPage() {
             }}
             className="space-y-6"
           >
-            <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4B692E]/10">
-              <div className="flex items-center gap-2 font-black text-xl mb-5 text-[#D87E33]">
+            <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10">
+              <div className="flex items-center gap-2 font-black text-xl mb-5 text-[#d87e33]">
                 <ShoppingBag size={24} />{" "}
                 <span className="uppercase">Chọn món</span>
               </div>
 
-              <div className="flex justify-between items-center bg-[#FDF1C3] p-4 rounded-2xl border border-[#D87E33]/30 mb-4 border-l-4 border-l-[#D87E33]">
+              <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
                 <div>
-                  <h3 className="font-bold text-[#4B692E]">Bánh mì miến</h3>
-                  <p className="text-[#D87E33] font-black mt-1">25K</p>
+                  <h3 className="font-bold text-[#4b692e]">Bánh mì miến</h3>
+                  <p className="text-[#d87e33] font-black mt-1">25K</p>
                 </div>
-                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4B692E]/20">
+                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
                   <button
                     type="button"
                     onClick={() =>
                       setCart((p) => ({ ...p, bmm: Math.max(0, p.bmm - 1) }))
                     }
-                    className="w-7 h-7 bg-[#E6EFD9] text-[#4B692E] rounded font-bold"
+                    className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
                   >
                     <Minus size={14} />
                   </button>
@@ -311,20 +311,20 @@ export default function BanhMiOrderPage() {
                   <button
                     type="button"
                     onClick={() => setCart((p) => ({ ...p, bmm: p.bmm + 1 }))}
-                    className="w-7 h-7 bg-[#4B692E] text-white rounded font-bold"
+                    className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
                   >
                     <Plus size={14} />
                   </button>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center bg-[#FDF1C3] p-4 rounded-2xl border border-[#D87E33]/30 mb-4 border-l-4 border-l-[#D87E33]">
+              <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
                 <div>
-                  <h3 className="font-bold text-[#4B692E]">Combo 30K</h3>
-                  <p className="text-xs text-[#6A8152]">1 Bánh + 1 Teago</p>
-                  <p className="text-[#D87E33] font-black mt-1">30K</p>
+                  <h3 className="font-bold text-[#4b692e]">Combo 30K</h3>
+                  <p className="text-xs text-[#6a8152]">1 Bánh + 1 Teago</p>
+                  <p className="text-[#d87e33] font-black mt-1">30K</p>
                 </div>
-                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4B692E]/20">
+                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
                   <button
                     type="button"
                     onClick={() =>
@@ -333,7 +333,7 @@ export default function BanhMiOrderPage() {
                         combo30k: Math.max(0, p.combo30k - 1),
                       }))
                     }
-                    className="w-7 h-7 bg-[#E6EFD9] text-[#4B692E] rounded font-bold"
+                    className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
                   >
                     <Minus size={14} />
                   </button>
@@ -345,20 +345,20 @@ export default function BanhMiOrderPage() {
                     onClick={() =>
                       setCart((p) => ({ ...p, combo30k: p.combo30k + 1 }))
                     }
-                    className="w-7 h-7 bg-[#4B692E] text-white rounded font-bold"
+                    className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
                   >
                     <Plus size={14} />
                   </button>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center bg-[#FDF1C3] p-4 rounded-2xl border border-[#D87E33]/30 mb-4 border-l-4 border-l-[#D87E33]">
+              <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
                 <div>
-                  <h3 className="font-bold text-[#4B692E]">Combo 40K</h3>
-                  <p className="text-xs text-[#6A8152]">1 Bánh + 1 Sữa đậu</p>
-                  <p className="text-[#D87E33] font-black mt-1">40K</p>
+                  <h3 className="font-bold text-[#4b692e]">Combo 40K</h3>
+                  <p className="text-xs text-[#6a8152]">1 Bánh + 1 Sữa đậu</p>
+                  <p className="text-[#d87e33] font-black mt-1">40K</p>
                 </div>
-                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4B692E]/20">
+                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
                   <button
                     type="button"
                     onClick={() =>
@@ -367,7 +367,7 @@ export default function BanhMiOrderPage() {
                         combo40k: Math.max(0, p.combo40k - 1),
                       }))
                     }
-                    className="w-7 h-7 bg-[#E6EFD9] text-[#4B692E] rounded font-bold"
+                    className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
                   >
                     <Minus size={14} />
                   </button>
@@ -379,7 +379,7 @@ export default function BanhMiOrderPage() {
                     onClick={() =>
                       setCart((p) => ({ ...p, combo40k: p.combo40k + 1 }))
                     }
-                    className="w-7 h-7 bg-[#4B692E] text-white rounded font-bold"
+                    className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
                   >
                     <Plus size={14} />
                   </button>
@@ -387,7 +387,7 @@ export default function BanhMiOrderPage() {
               </div>
 
               <div className="mt-5">
-                <label className="block text-xs font-bold uppercase text-[#6A8152] mb-2">
+                <label className="block text-xs font-bold uppercase text-[#6a8152] mb-2">
                   Ghi chú (Có thể chọn nhiều)
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -402,7 +402,7 @@ export default function BanhMiOrderPage() {
                             : [...p, opt],
                         )
                       }
-                      className={`py-3 px-4 rounded-xl text-sm font-bold border-2 ${selectedToppings.includes(opt) ? "bg-[#4B692E] text-white border-[#4B692E]" : "bg-white text-[#40240C] border-[#E6EFD9]"}`}
+                      className={`py-3 px-4 rounded-xl text-sm font-bold border-2 ${selectedToppings.includes(opt) ? "bg-[#4b692e] text-white border-[#4b692e]" : "bg-white text-[#40240c] border-[#e6efd9]"}`}
                     >
                       {opt}
                     </button>
@@ -411,8 +411,8 @@ export default function BanhMiOrderPage() {
               </div>
             </div>
 
-            <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4B692E]/10 space-y-5">
-              <div className="flex items-center gap-2 font-black text-xl text-[#D87E33] mb-2">
+            <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10 space-y-5">
+              <div className="flex items-center gap-2 font-black text-xl text-[#d87e33] mb-2">
                 <MapPin size={24} />{" "}
                 <span className="uppercase">Giao nhận</span>
               </div>
@@ -429,7 +429,7 @@ export default function BanhMiOrderPage() {
                       onClick={() =>
                         setFormData({ ...formData, orderDate: date })
                       }
-                      className={`py-2 px-1 rounded-xl text-[11px] sm:text-xs font-bold border-2 ${formData.orderDate === date ? "bg-[#D87E33] text-white border-[#D87E33]" : "bg-white border-[#E6EFD9] text-[#6A8152]"}`}
+                      className={`py-2 px-1 rounded-xl text-[11px] sm:text-xs font-bold border-2 ${formData.orderDate === date ? "bg-[#d87e33] text-white border-[#d87e33]" : "bg-white border-[#e6efd9] text-[#6a8152]"}`}
                     >
                       {date}
                     </button>
@@ -445,7 +445,7 @@ export default function BanhMiOrderPage() {
                   name="deliveryMethod"
                   value={formData.deliveryMethod}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl bg-[#FDF1C3]/30 border-2 border-[#E6EFD9]"
+                  className="w-full px-4 py-3 rounded-xl bg-[#fdf1c3]/30 border-2 border-[#e6efd9]"
                 >
                   <option value="Tự đến lấy tại 161C Đại La">
                     🏠 Tự lấy tại 161C Đại La
@@ -477,7 +477,7 @@ export default function BanhMiOrderPage() {
                       onClick={() =>
                         setFormData({ ...formData, deliveryTime: time })
                       }
-                      className={`py-2 px-1 rounded-xl text-xs font-bold border-2 ${formData.deliveryTime === time ? "bg-[#D87E33] text-white border-[#D87E33]" : "bg-white border-[#E6EFD9]"}`}
+                      className={`py-2 px-1 rounded-xl text-xs font-bold border-2 ${formData.deliveryTime === time ? "bg-[#d87e33] text-white border-[#d87e33]" : "bg-white border-[#e6efd9]"}`}
                     >
                       {time}
                     </button>
@@ -491,14 +491,14 @@ export default function BanhMiOrderPage() {
                     placeholder="Nhập giờ muốn nhận..."
                     value={formData.customTime}
                     onChange={handleChange}
-                    className="mt-2.5 w-full px-4 py-3 rounded-xl border-2 border-[#E6EFD9]"
+                    className="mt-2.5 w-full px-4 py-3 rounded-xl border-2 border-[#e6efd9]"
                   />
                 )}
               </div>
             </div>
 
-            <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4B692E]/10 space-y-4">
-              <div className="font-black text-xl text-[#D87E33] uppercase">
+            <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10 space-y-4">
+              <div className="font-black text-xl text-[#d87e33] uppercase">
                 Thông tin liên hệ
               </div>
               <input
@@ -508,7 +508,7 @@ export default function BanhMiOrderPage() {
                 placeholder="Tên của bạn *"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-[#E6EFD9]"
+                className="w-full px-4 py-3 rounded-xl border-2 border-[#e6efd9]"
               />
               <input
                 type="tel"
@@ -517,7 +517,7 @@ export default function BanhMiOrderPage() {
                 placeholder="Số điện thoại *"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-[#E6EFD9]"
+                className="w-full px-4 py-3 rounded-xl border-2 border-[#e6efd9]"
               />
               <input
                 type="text"
@@ -526,22 +526,22 @@ export default function BanhMiOrderPage() {
                 placeholder="Link FB / IG *"
                 value={formData.socialLink}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-[#E6EFD9]"
+                className="w-full px-4 py-3 rounded-xl border-2 border-[#e6efd9]"
               />
             </div>
 
-            <div className="bg-[#4B692E] p-5 rounded-3xl flex items-center justify-between sticky bottom-4">
+            <div className="bg-[#4b692e] p-5 rounded-3xl flex items-center justify-between sticky bottom-4">
               <div>
-                <p className="text-xs text-[#D0E3B6] font-bold">
+                <p className="text-xs text-[#d0e3b6] font-bold">
                   TỔNG ({totalQuantity})
                 </p>
-                <p className="text-2xl font-black text-[#FDF1C3]">
+                <p className="text-2xl font-black text-[#fdf1c3]">
                   {totalAmount.toLocaleString("vi-VN")}đ
                 </p>
               </div>
               <button
                 type="submit"
-                className="bg-[#D87E33] text-white font-bold px-5 py-4 rounded-2xl flex items-center gap-2"
+                className="bg-[#d87e33] text-white font-bold px-5 py-4 rounded-2xl flex items-center gap-2"
               >
                 <QrCode size={20} /> Tạo mã
               </button>
