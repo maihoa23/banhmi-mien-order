@@ -12,6 +12,7 @@ import {
   QrCode,
   ArrowLeft,
 } from "lucide-react";
+
 // --- HÀM TẠO NGÀY THỨ 2 -> THỨ 6 ---
 // Tự động chuyển sang tuần sau nếu hôm nay là Thứ 7 hoặc Chủ nhật
 const getCurrentWeekDays = () => {
@@ -42,29 +43,24 @@ const getCurrentWeekDays = () => {
 };
 
 const weekDays = getCurrentWeekDays();
+
 export default function BanhMiOrderPage() {
-  // --- STATE QUẢN LÝ LUỒNG ---
-  // step 1: Chọn món | step 2: Hiện QR Thanh toán | step 3: Hoàn tất & Đã lưu Sheets
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- STATE DỮ LIỆU ---
   const [formData, setFormData] = useState({
     name: "",
     socialLink: "",
     phone: "",
-    orderDate: weekDays[0], // Tự động lấy Thứ 2 làm mặc định
+    orderDate: weekDays[0], // Mặc định chọn Thứ 5
     deliveryMethod: "Tự đến lấy tại 161C Đại La",
     deliveryTime: "Sáng 8:30",
     customTime: "",
   });
 
   const [cart, setCart] = useState({ bmm: 1, combo30k: 0, combo40k: 0 });
-
-  // Topping lưu dạng mảng để chọn được nhiều option cùng lúc
   const [selectedToppings, setSelectedToppings] = useState([]);
 
-  // --- TÍNH TOÁN TIỀN & ĐƠN HÀNG ---
   const PRICES = { bmm: 25000, combo30k: 30000, combo40k: 40000 };
   const totalAmount =
     cart.bmm * PRICES.bmm +
@@ -80,10 +76,10 @@ export default function BanhMiOrderPage() {
     .filter(Boolean)
     .join(", ");
 
-  // --- THÔNG TIN VIETQR ---
+  // --- THÔNG TIN TÀI KHOẢN NGÂN HÀNG CỦA BẠN ---
   const BANK_ID = "PVcomBank";
-  const ACCOUNT_NO = "105004043276";
-  const ACCOUNT_NAME = "PHẠM HÀ THANH";
+  const ACCOUNT_NO = "105004043276"; // Nhớ thay STK của bạn
+  const ACCOUNT_NAME = "PHẠM HÀ THANH"; // Nhớ thay Tên của bạn
 
   const removeAccents = (str) =>
     str
@@ -97,22 +93,20 @@ export default function BanhMiOrderPage() {
   const transferContent = encodeURIComponent(
     `${cleanName} ${formData.phone} ${totalQuantity} SUAT`.trim(),
   );
-  // --- LOGIC: KIỂM TRA CHO PHÉP NHẬP GIỜ KHÁC KHÔNG ---
+  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${totalAmount}&addInfo=${transferContent}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+
+  // --- LOGIC: CHỈ CHO CHỌN GIỜ KHÁC KHI TỰ LẤY HOẶC ĐẶT SHIP ---
   const isFlexibleTime =
     formData.deliveryMethod === "Tự đến lấy tại 161C Đại La" ||
     formData.deliveryMethod === "Đặt ship";
   const timeOptions = isFlexibleTime
     ? ["Sáng 8:30", "Trưa 12:15", "Khác"]
     : ["Sáng 8:30", "Trưa 12:15"];
-  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${totalAmount}&addInfo=${transferContent}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
-  // --- HÀM XỬ LÝ SỰ KIỆN ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
-
-      // Nếu đổi phương thức giao hàng sang loại CỐ ĐỊNH, mà giờ đang chọn là "Khác" -> reset về 8:30
       if (name === "deliveryMethod") {
         const isNowFlexible =
           value === "Tự đến lấy tại 161C Đại La" || value === "Đặt ship";
@@ -128,7 +122,6 @@ export default function BanhMiOrderPage() {
     setCart((prev) => ({ ...prev, [item]: Math.max(0, prev[item] + delta) }));
   };
 
-  // Toggle Topping (Thêm/Bỏ khỏi mảng)
   const toggleTopping = (topping) => {
     setSelectedToppings((prev) =>
       prev.includes(topping)
@@ -137,7 +130,6 @@ export default function BanhMiOrderPage() {
     );
   };
 
-  // Bước 1 -> Bước 2: Chuyển sang quét QR (CHƯA LƯU SHEETS)
   const handleGoToPayment = (e) => {
     e.preventDefault();
     if (totalQuantity === 0) {
@@ -147,20 +139,15 @@ export default function BanhMiOrderPage() {
     setStep(2);
   };
 
-  // Bước 2 -> Bước 3: Xác nhận đã chuyển khoản & LƯU SHEETS
   const handleConfirmAndSubmit = async () => {
     setIsLoading(true);
 
     const finalOrder = {
       ...formData,
       quantity: orderSummary,
-      // Nếu mảng rỗng thì để "Đầy đủ", nếu có chọn thì nối lại (VD: "Bỏ rau thơm, Không cay")
       toppingNote:
         selectedToppings.length > 0 ? selectedToppings.join(", ") : "Đầy đủ",
-      finalDate:
-        formData.orderDate === "Khác"
-          ? formData.customDate
-          : formData.orderDate,
+      finalDate: formData.orderDate,
       finalTime:
         formData.deliveryTime === "Khác"
           ? formData.customTime
@@ -171,7 +158,7 @@ export default function BanhMiOrderPage() {
 
     try {
       const GOOGLE_SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbwr79cKF11Q78DFNEncaQ5JV5wF6NaEcEE3VuPs6RP1Kd3RtO74W0WnOJPkssOAOogM/exec";
+        "https://script.google.com/macros/s/AKfycbzevJPOpk3Mr4Pawo8XcV7j2KqPRgIs-EAJo_wNISc/dev";
       if (GOOGLE_SCRIPT_URL.startsWith("https://")) {
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
@@ -180,7 +167,7 @@ export default function BanhMiOrderPage() {
           body: JSON.stringify(finalOrder),
         });
       }
-      setStep(3); // Chuyển sang màn hình Thành công
+      setStep(3);
     } catch (error) {
       alert("Có lỗi xảy ra, vui lòng thử lại!");
     } finally {
@@ -188,7 +175,6 @@ export default function BanhMiOrderPage() {
     }
   };
 
-  // --- UI COMPONENTS ---
   const MenuItem = ({ id, name, desc, price }) => (
     <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FDF1C3] border border-[#D87E33]/30 mb-4 shadow-sm relative overflow-hidden">
       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#D87E33]"></div>
@@ -269,7 +255,7 @@ export default function BanhMiOrderPage() {
           </div>
         )}
 
-        {/* BƯỚC 2: QUÉT QR THANH TOÁN (Chưa lưu) */}
+        {/* BƯỚC 2: QUÉT QR THANH TOÁN */}
         {step === 2 && (
           <div className="bg-white rounded-3xl p-6 shadow-lg border-2 border-[#4B692E]/10 space-y-5 text-center">
             <div className="flex items-center justify-between mb-4">
@@ -320,7 +306,6 @@ export default function BanhMiOrderPage() {
               *Nhớ cap màn hình bill lại bạn nhé!
             </p>
 
-            {/* Nút này mới gọi API lưu Sheets */}
             <button
               onClick={handleConfirmAndSubmit}
               disabled={isLoading}
@@ -365,17 +350,16 @@ export default function BanhMiOrderPage() {
               <MenuItem
                 id="combo30k"
                 name="Combo 30K"
-                desc="• 1 Bánh mì miến &bull; 1 Teago"
+                desc="• 1 Bánh mì miến • 1 Teago"
                 price={30}
               />
               <MenuItem
                 id="combo40k"
                 name="Combo 40K"
-                desc="• 1 Bánh mì miến &bull; 1 Sữa đậu"
+                desc="• 1 Bánh mì miến • 1 Sữa đậu"
                 price={40}
               />
 
-              {/* Tùy chọn Topping (Multi-select) */}
               <div className="mt-5">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#6A8152] mb-2">
                   Ghi chú (Có thể chọn nhiều)
@@ -396,7 +380,6 @@ export default function BanhMiOrderPage() {
                     </button>
                   ))}
                 </div>
-                {/* Hiển thị trạng thái realtime cho khách an tâm */}
                 <p className="mt-2 text-xs text-[#6A8152] italic">
                   Trạng thái:{" "}
                   {selectedToppings.length === 0
