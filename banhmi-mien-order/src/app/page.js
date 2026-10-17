@@ -14,6 +14,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 
+// Tự động tính ngày Thứ 2 -> Thứ 6
 const getCurrentWeekDays = () => {
   const today = new Date();
   const currentDay = today.getDay();
@@ -37,22 +38,24 @@ export default function BanhMiOrderPage() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  // State lưu ảnh Bill
+  // State lưu trữ ảnh
   const [proofImage, setProofImage] = useState(null);
   const [fileName, setFileName] = useState("");
 
+  // ================= CẤU HÌNH CỦA BẠN =================
   const GOOGLE_SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbxkBbQ0UE5mLENmQDixDVzctLdRVbkfh30ZWFafvSlQ_IdRONJqqaSLs9e6gCylhQKf/exec";
-  const BANK_ID = "PVcomBank";
+  const BANK_ID = "PVcomBank"; // VD: MB, TPB
   const ACCOUNT_NO = "105004043276";
   const ACCOUNT_NAME = "PHẠM HÀ THANH";
+  // ====================================================
 
   const [formData, setFormData] = useState({
     name: "",
     socialLink: "",
     phone: "",
     orderDate: weekDays[0],
-    deliveryMethod: "Tự đến lấy tại 161C Đại La",
+    deliveryMethod: "Tự đến lấy tại 161C Đại La", // Mặc định tự lấy
     deliveryTime: "Sáng 8:30",
     customTime: "",
   });
@@ -111,16 +114,33 @@ export default function BanhMiOrderPage() {
     });
   };
 
+  // Hàm nén ảnh tự động để không bị lỗi Google Drive
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFileName(file.name);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result
-          .replace("data:", "")
-          .replace(/^.+,/, "");
-        setProofImage({ base64: base64String, type: file.type });
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800; // Chiều rộng tối đa
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // Nén ảnh xuống chất lượng 70% định dạng JPEG
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          const base64String = compressedDataUrl.replace(
+            "data:image/jpeg;base64,",
+            "",
+          );
+          setProofImage({ base64: base64String, type: "image/jpeg" });
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -128,7 +148,7 @@ export default function BanhMiOrderPage() {
 
   const handleConfirmAndSubmit = async () => {
     if (!proofImage) {
-      alert("Bạn quên up ảnh bill chuyển khoản rồi nè!");
+      alert("Bạn chưa tải ảnh chụp màn hình chuyển khoản lên kìa!");
       return;
     }
     setIsLoading(true);
@@ -159,7 +179,7 @@ export default function BanhMiOrderPage() {
       }
       setStep(3);
     } catch (error) {
-      alert("Có lỗi xảy ra, vui lòng thử lại!");
+      alert("Có lỗi kết nối, vui lòng thử lại!");
     } finally {
       setIsLoading(false);
     }
@@ -178,10 +198,11 @@ export default function BanhMiOrderPage() {
             PATU. BREAD
           </h1>
           <p className="text-sm text-[#e6efd9] font-medium">
-            Bánh mì miến — Nóng giòn mỗi ngày
+            Bánh mì miến — Nóng giòn mỗi sáng
           </p>
         </div>
 
+        {/* BƯỚC 3: THÀNH CÔNG */}
         {step === 3 && (
           <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-[#4b692e]/10 text-center space-y-5">
             <div className="w-16 h-16 bg-[#d0e3b6] text-[#4b692e] rounded-full flex items-center justify-center mx-auto mb-2">
@@ -190,6 +211,10 @@ export default function BanhMiOrderPage() {
             <h2 className="text-2xl font-black text-[#4b692e] uppercase">
               Đã gửi đơn tới bếp!
             </h2>
+            <p className="text-sm text-[#6a8152] font-medium px-4">
+              Đơn hàng của bạn đã được ghi nhận cùng ảnh chuyển khoản. Cảm ơn
+              bạn nhé!
+            </p>
             <button
               onClick={() => {
                 window.location.reload();
@@ -201,6 +226,7 @@ export default function BanhMiOrderPage() {
           </div>
         )}
 
+        {/* BƯỚC 2: THANH TOÁN VÀ UP ẢNH */}
         {step === 2 && (
           <div className="bg-white rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10 space-y-5 text-center">
             <div className="flex items-center justify-between mb-4">
@@ -237,8 +263,8 @@ export default function BanhMiOrderPage() {
               </div>
             </div>
 
-            {/* KHU VỰC TẢI ẢNH BILL */}
-            <div className="border-2 border-dashed border-[#4b692e]/30 rounded-2xl p-4 bg-[#f8f9fa] relative">
+            {/* UP ẢNH */}
+            <div className="border-2 border-dashed border-[#4b692e]/30 rounded-2xl p-4 bg-[#f8f9fa] relative hover:bg-[#e6efd9] transition">
               <input
                 type="file"
                 accept="image/*"
@@ -250,10 +276,10 @@ export default function BanhMiOrderPage() {
                   size={32}
                   className={fileName ? "text-[#d87e33]" : "text-[#4b692e]"}
                 />
-                <span className="font-bold text-sm text-[#40240c]">
+                <span className="font-bold text-sm text-[#40240c] text-center px-2">
                   {fileName
-                    ? "Đã chọn ảnh: " + fileName
-                    : "Bấm vào đây để tải ảnh Bill lên"}
+                    ? "Đã chọn: " + fileName
+                    : "Bấm vào đây để tải ảnh chụp chuyển khoản"}
                 </span>
               </div>
             </div>
@@ -261,19 +287,20 @@ export default function BanhMiOrderPage() {
             <button
               onClick={handleConfirmAndSubmit}
               disabled={isLoading}
-              className="w-full py-4 rounded-2xl bg-[#4b692e] text-white font-black hover:bg-[#344e1d] transition flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-[#4b692e] text-white font-black hover:bg-[#344e1d] transition flex items-center justify-center gap-2 shadow-md"
             >
               {isLoading ? (
-                "Đang gửi đơn..."
+                "Đang xử lý ảnh & gửi..."
               ) : (
                 <>
-                  <CheckCircle2 size={20} /> TÔI ĐÃ CHUYỂN KHOẢN
+                  <CheckCircle2 size={20} /> XÁC NHẬN ĐÃ CHUYỂN KHOẢN
                 </>
               )}
             </button>
           </div>
         )}
 
+        {/* BƯỚC 1: FORM */}
         {step === 1 && (
           <form
             onSubmit={(e) => {
@@ -315,6 +342,18 @@ export default function BanhMiOrderPage() {
                   >
                     <Plus size={14} />
                   </button>
+                </div>
+              </div>
+
+              {/* Tên Combo đã được đổi thành Combo Tiện Lợi */}
+              <div className="relative mt-6 mb-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-2 border-dashed border-[#d0e3b6]"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-4 text-xs font-bold uppercase tracking-widest text-[#4b692e] rounded-full border border-[#d0e3b6]">
+                    Combo Tiện Lợi
+                  </span>
                 </div>
               </div>
 
@@ -530,7 +569,7 @@ export default function BanhMiOrderPage() {
               />
             </div>
 
-            <div className="bg-[#4b692e] p-5 rounded-3xl flex items-center justify-between sticky bottom-4">
+            <div className="bg-[#4b692e] p-5 rounded-3xl flex items-center justify-between sticky bottom-4 shadow-xl border-2 border-[#d0e3b6] z-10">
               <div>
                 <p className="text-xs text-[#d0e3b6] font-bold">
                   TỔNG ({totalQuantity})
@@ -541,9 +580,9 @@ export default function BanhMiOrderPage() {
               </div>
               <button
                 type="submit"
-                className="bg-[#d87e33] text-white font-bold px-5 py-4 rounded-2xl flex items-center gap-2"
+                className="bg-[#d87e33] text-white font-bold px-5 py-4 rounded-2xl flex items-center gap-2 shadow-md hover:bg-[#c26b29] transition"
               >
-                <QrCode size={20} /> Tạo mã
+                <QrCode size={20} /> Thanh toán
               </button>
             </div>
           </form>
