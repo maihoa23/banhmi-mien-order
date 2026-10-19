@@ -6,7 +6,6 @@ import {
   Clock,
   Calendar,
   CheckCircle2,
-  Sparkles,
   Plus,
   Minus,
   QrCode,
@@ -43,11 +42,10 @@ export default function BanhMiOrderPage() {
   const [fileName, setFileName] = useState("");
 
   // ================= CẤU HÌNH CỦA BẠN =================
-  const GOOGLE_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbxkBbQ0UE5mLENmQDixDVzctLdRVbkfh30ZWFafvSlQ_IdRONJqqaSLs9e6gCylhQKf/exec";
+  const GOOGLE_SCRIPT_URL = "DÁN_URL_GOOGLE_SCRIPT_CỦA_BẠN_VÀO_ĐÂY";
   const BANK_ID = "PVcomBank"; // VD: MB, TPB
-  const ACCOUNT_NO = "105004043276";
-  const ACCOUNT_NAME = "PHẠM HÀ THANH";
+  const ACCOUNT_NO = "0123456789";
+  const ACCOUNT_NAME = "NGUYEN VAN A";
   // ====================================================
 
   const [formData, setFormData] = useState({
@@ -55,25 +53,22 @@ export default function BanhMiOrderPage() {
     socialLink: "",
     phone: "",
     orderDate: weekDays[0],
-    deliveryMethod: "Tự đến lấy tại 161C Đại La", // Mặc định tự lấy
+    deliveryMethod: "Tự đến lấy tại 161C Đại La",
     deliveryTime: "Sáng 8:30",
     customTime: "",
   });
 
-  const [cart, setCart] = useState({ bmm: 1, combo30k: 0, combo40k: 0 });
+  // Đã bỏ combo30k
+  const [cart, setCart] = useState({ bmm: 1, combo40k: 0 });
   const [selectedToppings, setSelectedToppings] = useState([]);
 
-  const PRICES = { bmm: 25000, combo30k: 30000, combo40k: 40000 };
-  const totalAmount =
-    cart.bmm * PRICES.bmm +
-    cart.combo30k * PRICES.combo30k +
-    cart.combo40k * PRICES.combo40k;
-  const totalQuantity = cart.bmm + cart.combo30k + cart.combo40k;
+  const PRICES = { bmm: 25000, combo40k: 40000 };
+  const totalAmount = cart.bmm * PRICES.bmm + cart.combo40k * PRICES.combo40k;
+  const totalQuantity = cart.bmm + cart.combo40k;
 
   const orderSummary = [
-    cart.bmm > 0 ? `${cart.bmm} BMM` : "",
-    cart.combo30k > 0 ? `${cart.combo30k} Combo 30K` : "",
-    cart.combo40k > 0 ? `${cart.combo40k} Combo 40K` : "",
+    cart.bmm > 0 ? `${cart.bmm} BMM (+Tặng Teago)` : "",
+    cart.combo40k > 0 ? `${cart.combo40k} Combo 40K (+Tặng Teago)` : "",
   ]
     .filter(Boolean)
     .join(", ");
@@ -124,7 +119,7 @@ export default function BanhMiOrderPage() {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 800; // Chiều rộng tối đa
+          const MAX_WIDTH = 800;
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
@@ -132,7 +127,6 @@ export default function BanhMiOrderPage() {
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          // Nén ảnh xuống chất lượng 70% định dạng JPEG
           const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
           const base64String = compressedDataUrl.replace(
             "data:image/jpeg;base64,",
@@ -319,9 +313,13 @@ export default function BanhMiOrderPage() {
                 <span className="uppercase">Chọn món</span>
               </div>
 
+              {/* Bánh mì miến 25K tặng kèm 1 Teago */}
               <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
                 <div>
                   <h3 className="font-bold text-[#4b692e]">Bánh mì miến</h3>
+                  <p className="text-xs text-[#d87e33] font-bold mt-0.5">
+                    🎁 Tặng kèm 1 Teago
+                  </p>
                   <p className="text-[#d87e33] font-black mt-1">25K</p>
                 </div>
                 <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
@@ -345,7 +343,7 @@ export default function BanhMiOrderPage() {
                 </div>
               </div>
 
-              {/* Tên Combo đã được đổi thành Combo Tiện Lợi */}
+              {/* Phân cách Combo Tiện Lợi */}
               <div className="relative mt-6 mb-2">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t-2 border-dashed border-[#d0e3b6]"></div>
@@ -357,44 +355,14 @@ export default function BanhMiOrderPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
-                <div>
-                  <h3 className="font-bold text-[#4b692e]">Combo 30K</h3>
-                  <p className="text-xs text-[#6a8152]">1 Bánh + 1 Teago</p>
-                  <p className="text-[#d87e33] font-black mt-1">30K</p>
-                </div>
-                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCart((p) => ({
-                        ...p,
-                        combo30k: Math.max(0, p.combo30k - 1),
-                      }))
-                    }
-                    className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="font-bold w-4 text-center">
-                    {cart.combo30k}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCart((p) => ({ ...p, combo30k: p.combo30k + 1 }))
-                    }
-                    className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-              </div>
-
+              {/* Combo 40K tặng kèm 1 Teago */}
               <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
                 <div>
                   <h3 className="font-bold text-[#4b692e]">Combo 40K</h3>
                   <p className="text-xs text-[#6a8152]">1 Bánh + 1 Sữa đậu</p>
+                  <p className="text-xs text-[#d87e33] font-bold mt-0.5">
+                    🎁 Tặng kèm 1 Teago
+                  </p>
                   <p className="text-[#d87e33] font-black mt-1">40K</p>
                 </div>
                 <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
