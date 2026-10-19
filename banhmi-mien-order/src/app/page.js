@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShoppingBag,
   MapPin,
@@ -13,7 +13,6 @@ import {
   UploadCloud,
 } from "lucide-react";
 
-// Tự động tính ngày Thứ 2 -> Thứ 6
 const getCurrentWeekDays = () => {
   const today = new Date();
   const currentDay = today.getDay();
@@ -36,16 +35,18 @@ const weekDays = getCurrentWeekDays();
 export default function BanhMiOrderPage() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-
-  // State lưu trữ ảnh
   const [proofImage, setProofImage] = useState(null);
   const [fileName, setFileName] = useState("");
 
+  // STATE CHECK GIỚI HẠN ĐƠN NGÀY 20/10
+  const [limitReached2010, setLimitReached2010] = useState(false);
+
   // ================= CẤU HÌNH CỦA BẠN =================
-  const GOOGLE_SCRIPT_URL = "DÁN_URL_GOOGLE_SCRIPT_CỦA_BẠN_VÀO_ĐÂY";
-  const BANK_ID = "PVcomBank"; // VD: MB, TPB
-  const ACCOUNT_NO = "0123456789";
-  const ACCOUNT_NAME = "NGUYEN VAN A";
+  const GOOGLE_SCRIPT_URL =
+    "https://script.google.com/macros/s/AKfycbxkBbQ0UE5mLENmQDixDVzctLdRVbkfh30ZWFafvSlQ_IdRONJqqaSLs9e6gCylhQKf/exec";
+  const BANK_ID = "PVcomBank";
+  const ACCOUNT_NO = "105004043276";
+  const ACCOUNT_NAME = "PHẠM HÀ THANH";
   // ====================================================
 
   const [formData, setFormData] = useState({
@@ -58,17 +59,58 @@ export default function BanhMiOrderPage() {
     customTime: "",
   });
 
-  // Đã bỏ combo30k
-  const [cart, setCart] = useState({ bmm: 1, combo40k: 0 });
+  // Gọi API lấy số đơn đã đặt ngày 20/10 khi web vừa load lên
+  useEffect(() => {
+    if (GOOGLE_SCRIPT_URL.startsWith("https://")) {
+      fetch(GOOGLE_SCRIPT_URL)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.count >= 20) {
+            setLimitReached2010(true);
+            // Nếu ngày 20/10 đang được chọn mà bị hết, tự nhảy sang ngày khác
+            setFormData((prev) => {
+              if (prev.orderDate.includes("20/10")) {
+                return {
+                  ...prev,
+                  orderDate:
+                    weekDays.find((d) => !d.includes("20/10")) || weekDays[0],
+                };
+              }
+              return prev;
+            });
+          }
+        })
+        .catch((err) => console.log("Lỗi tải data:", err));
+    }
+  }, []);
+
+  const [cart, setCart] = useState({ bmm: 1, combo30k: 0, combo40k: 0 });
   const [selectedToppings, setSelectedToppings] = useState([]);
 
-  const PRICES = { bmm: 25000, combo40k: 40000 };
-  const totalAmount = cart.bmm * PRICES.bmm + cart.combo40k * PRICES.combo40k;
-  const totalQuantity = cart.bmm + cart.combo40k;
+  // LOGIC MENU BIẾN HÌNH THEO NGÀY
+  const isPromoDay = formData.orderDate.includes("20/10");
+
+  useEffect(() => {
+    // Nếu chọn ngày KM, tự động reset số lượng Combo30K về 0
+    if (isPromoDay && cart.combo30k > 0) {
+      setCart((prev) => ({ ...prev, combo30k: 0 }));
+    }
+  }, [isPromoDay, cart.combo30k]);
+
+  // Giá và tổng tiền thay đổi linh hoạt
+  const totalAmount =
+    cart.bmm * 25000 +
+    (!isPromoDay ? cart.combo30k * 30000 : 0) +
+    cart.combo40k * 40000;
+  const totalQuantity =
+    cart.bmm + (!isPromoDay ? cart.combo30k : 0) + cart.combo40k;
 
   const orderSummary = [
-    cart.bmm > 0 ? `${cart.bmm} BMM (+Tặng Teago)` : "",
-    cart.combo40k > 0 ? `${cart.combo40k} Combo 40K (+Tặng Teago)` : "",
+    cart.bmm > 0 ? `${cart.bmm} BMM${isPromoDay ? " (+Tặng Teago)" : ""}` : "",
+    !isPromoDay && cart.combo30k > 0 ? `${cart.combo30k} Combo 30K` : "",
+    cart.combo40k > 0
+      ? `${cart.combo40k} Combo 40K${isPromoDay ? " (+Tặng Teago)" : ""}`
+      : "",
   ]
     .filter(Boolean)
     .join(", ");
@@ -109,7 +151,6 @@ export default function BanhMiOrderPage() {
     });
   };
 
-  // Hàm nén ảnh tự động để không bị lỗi Google Drive
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -123,16 +164,13 @@ export default function BanhMiOrderPage() {
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
-
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
           const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
-          const base64String = compressedDataUrl.replace(
-            "data:image/jpeg;base64,",
-            "",
-          );
-          setProofImage({ base64: base64String, type: "image/jpeg" });
+          setProofImage({
+            base64: compressedDataUrl.replace("data:image/jpeg;base64,", ""),
+            type: "image/jpeg",
+          });
         };
         img.src = event.target.result;
       };
@@ -146,7 +184,6 @@ export default function BanhMiOrderPage() {
       return;
     }
     setIsLoading(true);
-
     const finalOrder = {
       ...formData,
       quantity: orderSummary,
@@ -182,7 +219,6 @@ export default function BanhMiOrderPage() {
   return (
     <div className="min-h-screen bg-[#d0e3b6] text-[#40240c] py-8 px-4 font-sans selection:bg-[#d87e33] selection:text-white">
       <div className="max-w-lg mx-auto">
-        {/* HEADER */}
         <div className="text-center mb-8 bg-[#4b692e] py-7 px-4 rounded-[32px] shadow-lg border-4 border-[#fdf1c3] relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-[#d87e33]"></div>
           <h1
@@ -196,7 +232,6 @@ export default function BanhMiOrderPage() {
           </p>
         </div>
 
-        {/* BƯỚC 3: THÀNH CÔNG */}
         {step === 3 && (
           <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-[#4b692e]/10 text-center space-y-5">
             <div className="w-16 h-16 bg-[#d0e3b6] text-[#4b692e] rounded-full flex items-center justify-center mx-auto mb-2">
@@ -206,21 +241,17 @@ export default function BanhMiOrderPage() {
               Đã gửi đơn tới bếp!
             </h2>
             <p className="text-sm text-[#6a8152] font-medium px-4">
-              Đơn hàng của bạn đã được ghi nhận cùng ảnh chuyển khoản. Cảm ơn
-              bạn nhé!
+              Cảm ơn bạn nhé!
             </p>
             <button
-              onClick={() => {
-                window.location.reload();
-              }}
-              className="mt-4 w-full py-3.5 rounded-xl bg-[#e6efd9] text-[#4b692e] font-bold text-sm hover:bg-[#d0e3b6]"
+              onClick={() => window.location.reload()}
+              className="mt-4 w-full py-3.5 rounded-xl bg-[#e6efd9] text-[#4b692e] font-bold hover:bg-[#d0e3b6]"
             >
               Đặt thêm đơn mới
             </button>
           </div>
         )}
 
-        {/* BƯỚC 2: THANH TOÁN VÀ UP ẢNH */}
         {step === 2 && (
           <div className="bg-white rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10 space-y-5 text-center">
             <div className="flex items-center justify-between mb-4">
@@ -234,7 +265,6 @@ export default function BanhMiOrderPage() {
                 Thanh toán
               </span>
             </div>
-
             <div className="bg-[#fdf1c3] p-4 rounded-2xl border-2 border-[#d87e33]/20 mx-auto max-w-sm">
               <img
                 src={qrUrl}
@@ -256,8 +286,6 @@ export default function BanhMiOrderPage() {
                 </p>
               </div>
             </div>
-
-            {/* UP ẢNH */}
             <div className="border-2 border-dashed border-[#4b692e]/30 rounded-2xl p-4 bg-[#f8f9fa] relative hover:bg-[#e6efd9] transition">
               <input
                 type="file"
@@ -271,55 +299,90 @@ export default function BanhMiOrderPage() {
                   className={fileName ? "text-[#d87e33]" : "text-[#4b692e]"}
                 />
                 <span className="font-bold text-sm text-[#40240c] text-center px-2">
-                  {fileName
-                    ? "Đã chọn: " + fileName
-                    : "Bấm vào đây để tải ảnh chụp chuyển khoản"}
+                  {fileName ? fileName : "Bấm tải ảnh chụp chuyển khoản"}
                 </span>
               </div>
             </div>
-
             <button
               onClick={handleConfirmAndSubmit}
               disabled={isLoading}
-              className="w-full py-4 rounded-2xl bg-[#4b692e] text-white font-black hover:bg-[#344e1d] transition flex items-center justify-center gap-2 shadow-md"
+              className="w-full py-4 rounded-2xl bg-[#4b692e] text-white font-black hover:bg-[#344e1d] flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                "Đang xử lý ảnh & gửi..."
+                "Đang xử lý..."
               ) : (
                 <>
-                  <CheckCircle2 size={20} /> XÁC NHẬN ĐÃ CHUYỂN KHOẢN
+                  <CheckCircle2 size={20} /> XÁC NHẬN CHUYỂN KHOẢN
                 </>
               )}
             </button>
           </div>
         )}
 
-        {/* BƯỚC 1: FORM */}
         {step === 1 && (
           <form
             onSubmit={(e) => {
               e.preventDefault();
               if (totalQuantity === 0) {
-                alert("Bạn chưa chọn món nào!");
+                alert("Bạn chưa chọn món!");
                 return;
               }
               setStep(2);
             }}
             className="space-y-6"
           >
+            {/* PHẦN CHỌN NGÀY NẰM TRÊN CÙNG ĐỂ MENU TỰ THAY ĐỔI */}
+            <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10">
+              <div className="flex items-center gap-2 font-black text-xl text-[#d87e33] mb-4">
+                <Calendar size={24} />{" "}
+                <span className="uppercase">Ngày đặt hàng</span>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5">
+                {weekDays.map((date) => {
+                  const is2010 = date.includes("20/10");
+                  const isDisabled = is2010 && limitReached2010;
+                  return (
+                    <button
+                      type="button"
+                      key={date}
+                      disabled={isDisabled}
+                      onClick={() =>
+                        setFormData({ ...formData, orderDate: date })
+                      }
+                      className={`py-2 px-1 rounded-xl text-[11px] sm:text-xs font-bold border-2 transition ${
+                        isDisabled
+                          ? "bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed opacity-70"
+                          : formData.orderDate === date
+                            ? "bg-[#d87e33] text-white border-[#d87e33]"
+                            : "bg-white border-[#e6efd9] text-[#6a8152] hover:border-[#d0e3b6]"
+                      }`}
+                    >
+                      {date}
+                      {isDisabled && (
+                        <span className="block text-[9px] text-red-500 font-black mt-0.5">
+                          Hết suất
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10">
               <div className="flex items-center gap-2 font-black text-xl mb-5 text-[#d87e33]">
                 <ShoppingBag size={24} />{" "}
                 <span className="uppercase">Chọn món</span>
               </div>
 
-              {/* Bánh mì miến 25K tặng kèm 1 Teago */}
               <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
                 <div>
                   <h3 className="font-bold text-[#4b692e]">Bánh mì miến</h3>
-                  <p className="text-xs text-[#d87e33] font-bold mt-0.5">
-                    🎁 Tặng kèm 1 Teago
-                  </p>
+                  {isPromoDay && (
+                    <p className="text-xs text-[#d87e33] font-bold mt-0.5">
+                      🎁 Tặng kèm 1 Teago
+                    </p>
+                  )}
                   <p className="text-[#d87e33] font-black mt-1">25K</p>
                 </div>
                 <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
@@ -343,7 +406,6 @@ export default function BanhMiOrderPage() {
                 </div>
               </div>
 
-              {/* Phân cách Combo Tiện Lợi */}
               <div className="relative mt-6 mb-2">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t-2 border-dashed border-[#d0e3b6]"></div>
@@ -355,14 +417,52 @@ export default function BanhMiOrderPage() {
                 </div>
               </div>
 
-              {/* Combo 40K tặng kèm 1 Teago */}
+              {/* CHỈ HIỆN COMBO 30K KHI KHÔNG PHẢI LÀ NGÀY KHUYẾN MÃI */}
+              {!isPromoDay && (
+                <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
+                  <div>
+                    <h3 className="font-bold text-[#4b692e]">Combo 30K</h3>
+                    <p className="text-xs text-[#6a8152]">1 Bánh + 1 Teago</p>
+                    <p className="text-[#d87e33] font-black mt-1">30K</p>
+                  </div>
+                  <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCart((p) => ({
+                          ...p,
+                          combo30k: Math.max(0, p.combo30k - 1),
+                        }))
+                      }
+                      className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="font-bold w-4 text-center">
+                      {cart.combo30k}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCart((p) => ({ ...p, combo30k: p.combo30k + 1 }))
+                      }
+                      className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
                 <div>
                   <h3 className="font-bold text-[#4b692e]">Combo 40K</h3>
                   <p className="text-xs text-[#6a8152]">1 Bánh + 1 Sữa đậu</p>
-                  <p className="text-xs text-[#d87e33] font-bold mt-0.5">
-                    🎁 Tặng kèm 1 Teago
-                  </p>
+                  {isPromoDay && (
+                    <p className="text-xs text-[#d87e33] font-bold mt-0.5">
+                      🎁 Tặng kèm 1 Teago
+                    </p>
+                  )}
                   <p className="text-[#d87e33] font-black mt-1">40K</p>
                 </div>
                 <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
@@ -423,27 +523,6 @@ export default function BanhMiOrderPage() {
                 <MapPin size={24} />{" "}
                 <span className="uppercase">Giao nhận</span>
               </div>
-
-              <div>
-                <label className="flex items-center gap-1.5 text-sm font-bold mb-2">
-                  <Calendar size={16} /> Ngày đặt hàng *
-                </label>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {weekDays.map((date) => (
-                    <button
-                      type="button"
-                      key={date}
-                      onClick={() =>
-                        setFormData({ ...formData, orderDate: date })
-                      }
-                      className={`py-2 px-1 rounded-xl text-[11px] sm:text-xs font-bold border-2 ${formData.orderDate === date ? "bg-[#d87e33] text-white border-[#d87e33]" : "bg-white border-[#e6efd9] text-[#6a8152]"}`}
-                    >
-                      {date}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-bold mb-2">
                   Phương thức nhận hàng *
@@ -469,7 +548,6 @@ export default function BanhMiOrderPage() {
                   <option value="Đặt ship">🛵 Đặt ship ngoài</option>
                 </select>
               </div>
-
               <div>
                 <label className="flex items-center gap-1.5 text-sm font-bold mb-2">
                   <Clock size={16} /> Thời gian nhận *
@@ -537,7 +615,7 @@ export default function BanhMiOrderPage() {
               />
             </div>
 
-            <div className="bg-[#4b692e] p-5 rounded-3xl flex items-center justify-between sticky bottom-4 shadow-xl border-2 border-[#d0e3b6] z-10">
+            <div className="bg-[#4b692e] p-5 rounded-3xl flex items-center justify-between sticky bottom-4 shadow-xl z-10 border-2 border-[#d0e3b6]">
               <div>
                 <p className="text-xs text-[#d0e3b6] font-bold">
                   TỔNG ({totalQuantity})
@@ -548,7 +626,7 @@ export default function BanhMiOrderPage() {
               </div>
               <button
                 type="submit"
-                className="bg-[#d87e33] text-white font-bold px-5 py-4 rounded-2xl flex items-center gap-2 shadow-md hover:bg-[#c26b29] transition"
+                className="bg-[#d87e33] text-white font-bold px-5 py-4 rounded-2xl flex items-center gap-2 hover:bg-[#c26b29] transition"
               >
                 <QrCode size={20} /> Thanh toán
               </button>
