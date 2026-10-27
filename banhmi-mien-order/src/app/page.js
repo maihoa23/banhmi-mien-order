@@ -38,15 +38,11 @@ export default function BanhMiOrderPage() {
   const [proofImage, setProofImage] = useState(null);
   const [fileName, setFileName] = useState("");
 
-  // STATE CHECK GIỚI HẠN ĐƠN NGÀY 20/10
-  const [limitReached2010, setLimitReached2010] = useState(false);
-
   // ================= CẤU HÌNH CỦA BẠN =================
-  const GOOGLE_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbxkBbQ0UE5mLENmQDixDVzctLdRVbkfh30ZWFafvSlQ_IdRONJqqaSLs9e6gCylhQKf/exec";
+  const GOOGLE_SCRIPT_URL = "DÁN_URL_GOOGLE_SCRIPT_CỦA_BẠN_VÀO_ĐÂY";
   const BANK_ID = "PVcomBank";
-  const ACCOUNT_NO = "105004043276";
-  const ACCOUNT_NAME = "PHẠM HÀ THANH";
+  const ACCOUNT_NO = "0123456789";
+  const ACCOUNT_NAME = "NGUYEN VAN A";
   // ====================================================
 
   const [formData, setFormData] = useState({
@@ -57,60 +53,52 @@ export default function BanhMiOrderPage() {
     deliveryMethod: "Tự đến lấy tại 161C Đại La",
     deliveryTime: "Sáng 8:30",
     customTime: "",
+    detailedNote: "", // Ghi chú chi tiết topping
+    shippingAddress: "", // Địa chỉ ship
   });
 
-  // Gọi API lấy số đơn đã đặt ngày 20/10 khi web vừa load lên
-  useEffect(() => {
-    if (GOOGLE_SCRIPT_URL.startsWith("https://")) {
-      fetch(GOOGLE_SCRIPT_URL)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.count >= 20) {
-            setLimitReached2010(true);
-            // Nếu ngày 20/10 đang được chọn mà bị hết, tự nhảy sang ngày khác
-            setFormData((prev) => {
-              if (prev.orderDate.includes("20/10")) {
-                return {
-                  ...prev,
-                  orderDate:
-                    weekDays.find((d) => !d.includes("20/10")) || weekDays[0],
-                };
-              }
-              return prev;
-            });
-          }
-        })
-        .catch((err) => console.log("Lỗi tải data:", err));
-    }
-  }, []);
+  // STATE MENU MỚI THEO ẢNH
+  const [cart, setCart] = useState({
+    banh: 1,
+    mien: 0,
+    nuoc: 0,
+    combo1: 0,
+    combo2: 0,
+    comboBanThan: 0,
+  });
 
-  const [cart, setCart] = useState({ bmm: 1, combo30k: 0, combo40k: 0 });
-  const [selectedToppings, setSelectedToppings] = useState([]);
+  const PRICES = {
+    banh: 25000,
+    mien: 39000,
+    nuoc: 5000,
+    combo1: 28000,
+    combo2: 42000,
+    comboBanThan: 67000,
+  };
 
-  // LOGIC MENU BIẾN HÌNH THEO NGÀY
-  const isPromoDay = formData.orderDate.includes("20/10");
-
-  useEffect(() => {
-    // Nếu chọn ngày KM, tự động reset số lượng Combo30K về 0
-    if (isPromoDay && cart.combo30k > 0) {
-      setCart((prev) => ({ ...prev, combo30k: 0 }));
-    }
-  }, [isPromoDay, cart.combo30k]);
-
-  // Giá và tổng tiền thay đổi linh hoạt
   const totalAmount =
-    cart.bmm * 25000 +
-    (!isPromoDay ? cart.combo30k * 30000 : 0) +
-    cart.combo40k * 40000;
+    cart.banh * PRICES.banh +
+    cart.mien * PRICES.mien +
+    cart.nuoc * PRICES.nuoc +
+    cart.combo1 * PRICES.combo1 +
+    cart.combo2 * PRICES.combo2 +
+    cart.comboBanThan * PRICES.comboBanThan;
+
   const totalQuantity =
-    cart.bmm + (!isPromoDay ? cart.combo30k : 0) + cart.combo40k;
+    cart.banh +
+    cart.mien +
+    cart.nuoc +
+    cart.combo1 +
+    cart.combo2 +
+    cart.comboBanThan;
 
   const orderSummary = [
-    cart.bmm > 0 ? `${cart.bmm} BMM${isPromoDay ? " (+Tặng Teago)" : ""}` : "",
-    !isPromoDay && cart.combo30k > 0 ? `${cart.combo30k} Combo 30K` : "",
-    cart.combo40k > 0
-      ? `${cart.combo40k} Combo 40K${isPromoDay ? " (+Tặng Teago)" : ""}`
-      : "",
+    cart.banh > 0 ? `${cart.banh} Bánh` : "",
+    cart.mien > 0 ? `${cart.mien} Miến` : "",
+    cart.nuoc > 0 ? `${cart.nuoc} Nước` : "",
+    cart.combo1 > 0 ? `${cart.combo1} Combo 1` : "",
+    cart.combo2 > 0 ? `${cart.combo2} Combo 2` : "",
+    cart.comboBanThan > 0 ? `${cart.comboBanThan} Combo Bạn Thân` : "",
   ]
     .filter(Boolean)
     .join(", ");
@@ -131,7 +119,7 @@ export default function BanhMiOrderPage() {
 
   const isFlexibleTime =
     formData.deliveryMethod === "Tự đến lấy tại 161C Đại La" ||
-    formData.deliveryMethod === "Đặt ship";
+    formData.deliveryMethod === "Tự đặt ship";
   const timeOptions = isFlexibleTime
     ? ["Sáng 8:30", "Trưa 12:15", "Khác"]
     : ["Sáng 8:30", "Trưa 12:15"];
@@ -142,7 +130,7 @@ export default function BanhMiOrderPage() {
       const newData = { ...prev, [name]: value };
       if (
         name === "deliveryMethod" &&
-        !(value === "Tự đến lấy tại 161C Đại La" || value === "Đặt ship") &&
+        !(value === "Tự đến lấy tại 161C Đại La" || value === "Tự đặt ship") &&
         prev.deliveryTime === "Khác"
       ) {
         newData.deliveryTime = "Sáng 8:30";
@@ -184,17 +172,24 @@ export default function BanhMiOrderPage() {
       return;
     }
     setIsLoading(true);
+
+    // Gộp địa chỉ vào cột Giao nhận để không làm hỏng file Sheets cũ
+    const finalDelivery =
+      formData.deliveryMethod === "Tự đặt ship"
+        ? `Tự đặt ship - Đ/c: ${formData.shippingAddress}`
+        : formData.deliveryMethod;
+
     const finalOrder = {
       ...formData,
       quantity: orderSummary,
-      toppingNote:
-        selectedToppings.length > 0 ? selectedToppings.join(", ") : "Đầy đủ",
+      toppingNote: formData.detailedNote || "Đầy đủ", // Lưu ghi chú chi tiết
       finalDate: formData.orderDate,
       finalTime:
         formData.deliveryTime === "Khác"
           ? formData.customTime
           : formData.deliveryTime,
       totalPrice: totalAmount,
+      deliveryMethod: finalDelivery,
       proofImage: proofImage,
       createdAt: new Date().toLocaleString("vi-VN"),
     };
@@ -215,6 +210,36 @@ export default function BanhMiOrderPage() {
       setIsLoading(false);
     }
   };
+
+  // Component hiển thị Món ăn cho gọn code
+  const MenuItem = ({ id, name, desc, price }) => (
+    <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-3 border-l-4 border-l-[#d87e33]">
+      <div>
+        <h3 className="font-bold text-[#4b692e]">{name}</h3>
+        {desc && <p className="text-xs text-[#6a8152] mt-0.5">{desc}</p>}
+        <p className="text-[#d87e33] font-black mt-1">{price}K</p>
+      </div>
+      <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
+        <button
+          type="button"
+          onClick={() =>
+            setCart((p) => ({ ...p, [id]: Math.max(0, p[id] - 1) }))
+          }
+          className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
+        >
+          <Minus size={14} />
+        </button>
+        <span className="font-bold w-4 text-center">{cart[id]}</span>
+        <button
+          type="button"
+          onClick={() => setCart((p) => ({ ...p, [id]: p[id] + 1 }))}
+          className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#d0e3b6] text-[#40240c] py-8 px-4 font-sans selection:bg-[#d87e33] selection:text-white">
@@ -331,190 +356,85 @@ export default function BanhMiOrderPage() {
             }}
             className="space-y-6"
           >
-            {/* PHẦN CHỌN NGÀY NẰM TRÊN CÙNG ĐỂ MENU TỰ THAY ĐỔI */}
             <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10">
               <div className="flex items-center gap-2 font-black text-xl text-[#d87e33] mb-4">
                 <Calendar size={24} />{" "}
                 <span className="uppercase">Ngày đặt hàng</span>
               </div>
               <div className="grid grid-cols-5 gap-1.5">
-                {weekDays.map((date) => {
-                  const is2010 = date.includes("20/10");
-                  const isDisabled = is2010 && limitReached2010;
-                  return (
-                    <button
-                      type="button"
-                      key={date}
-                      disabled={isDisabled}
-                      onClick={() =>
-                        setFormData({ ...formData, orderDate: date })
-                      }
-                      className={`py-2 px-1 rounded-xl text-[11px] sm:text-xs font-bold border-2 transition ${
-                        isDisabled
-                          ? "bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed opacity-70"
-                          : formData.orderDate === date
-                            ? "bg-[#d87e33] text-white border-[#d87e33]"
-                            : "bg-white border-[#e6efd9] text-[#6a8152] hover:border-[#d0e3b6]"
-                      }`}
-                    >
-                      {date}
-                      {isDisabled && (
-                        <span className="block text-[9px] text-red-500 font-black mt-0.5">
-                          Hết suất
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                {weekDays.map((date) => (
+                  <button
+                    type="button"
+                    key={date}
+                    onClick={() =>
+                      setFormData({ ...formData, orderDate: date })
+                    }
+                    className={`py-2 px-1 rounded-xl text-[11px] sm:text-xs font-bold border-2 transition ${
+                      formData.orderDate === date
+                        ? "bg-[#d87e33] text-white border-[#d87e33]"
+                        : "bg-white border-[#e6efd9] text-[#6a8152] hover:border-[#d0e3b6]"
+                    }`}
+                  >
+                    {date}
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="bg-white/95 rounded-3xl p-6 shadow-lg border-2 border-[#4b692e]/10">
               <div className="flex items-center gap-2 font-black text-xl mb-5 text-[#d87e33]">
                 <ShoppingBag size={24} />{" "}
-                <span className="uppercase">Chọn món</span>
+                <span className="uppercase">Menu</span>
               </div>
 
-              <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
-                <div>
-                  <h3 className="font-bold text-[#4b692e]">Bánh mì miến</h3>
-                  {isPromoDay && (
-                    <p className="text-xs text-[#d87e33] font-bold mt-0.5">
-                      🎁 Tặng kèm 1 Teago
-                    </p>
-                  )}
-                  <p className="text-[#d87e33] font-black mt-1">25K</p>
-                </div>
-                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCart((p) => ({ ...p, bmm: Math.max(0, p.bmm - 1) }))
-                    }
-                    className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="font-bold w-4 text-center">{cart.bmm}</span>
-                  <button
-                    type="button"
-                    onClick={() => setCart((p) => ({ ...p, bmm: p.bmm + 1 }))}
-                    className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
+              {/* NHÓM MÓN LẺ */}
+              <div className="mb-2">
+                <span className="bg-[#e6efd9] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#4b692e] rounded-lg">
+                  Món lẻ
+                </span>
               </div>
+              <MenuItem id="banh" name="Bánh mì" price={25} />
+              <MenuItem id="mien" name="Miến" price={39} />
+              <MenuItem id="nuoc" name="Nước (Teago)" price={5} />
 
-              <div className="relative mt-6 mb-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t-2 border-dashed border-[#d0e3b6]"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-4 text-xs font-bold uppercase tracking-widest text-[#4b692e] rounded-full border border-[#d0e3b6]">
-                    Combo Tiện Lợi
-                  </span>
-                </div>
+              {/* NHÓM COMBO */}
+              <div className="mt-6 mb-2">
+                <span className="bg-[#e6efd9] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#4b692e] rounded-lg">
+                  Combo Tiết Kiệm
+                </span>
               </div>
+              <MenuItem
+                id="combo1"
+                name="Combo 1"
+                desc="Bánh mì + Nước"
+                price={28}
+              />
+              <MenuItem
+                id="combo2"
+                name="Combo 2"
+                desc="Miến + Nước"
+                price={42}
+              />
+              <MenuItem
+                id="comboBanThan"
+                name="Combo Bạn Thân"
+                desc="Bánh mì + Miến + 2 Teago"
+                price={67}
+              />
 
-              {/* CHỈ HIỆN COMBO 30K KHI KHÔNG PHẢI LÀ NGÀY KHUYẾN MÃI */}
-              {!isPromoDay && (
-                <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
-                  <div>
-                    <h3 className="font-bold text-[#4b692e]">Combo 30K</h3>
-                    <p className="text-xs text-[#6a8152]">1 Bánh + 1 Teago</p>
-                    <p className="text-[#d87e33] font-black mt-1">30K</p>
-                  </div>
-                  <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCart((p) => ({
-                          ...p,
-                          combo30k: Math.max(0, p.combo30k - 1),
-                        }))
-                      }
-                      className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="font-bold w-4 text-center">
-                      {cart.combo30k}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCart((p) => ({ ...p, combo30k: p.combo30k + 1 }))
-                      }
-                      className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center bg-[#fdf1c3] p-4 rounded-2xl border border-[#d87e33]/30 mb-4 border-l-4 border-l-[#d87e33]">
-                <div>
-                  <h3 className="font-bold text-[#4b692e]">Combo 40K</h3>
-                  <p className="text-xs text-[#6a8152]">1 Bánh + 1 Sữa đậu</p>
-                  {isPromoDay && (
-                    <p className="text-xs text-[#d87e33] font-bold mt-0.5">
-                      🎁 Tặng kèm 1 Teago
-                    </p>
-                  )}
-                  <p className="text-[#d87e33] font-black mt-1">40K</p>
-                </div>
-                <div className="flex items-center gap-3 bg-white px-2 py-1.5 rounded-xl border border-[#4b692e]/20">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCart((p) => ({
-                        ...p,
-                        combo40k: Math.max(0, p.combo40k - 1),
-                      }))
-                    }
-                    className="w-7 h-7 bg-[#e6efd9] text-[#4b692e] rounded font-bold"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="font-bold w-4 text-center">
-                    {cart.combo40k}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCart((p) => ({ ...p, combo40k: p.combo40k + 1 }))
-                    }
-                    className="w-7 h-7 bg-[#4b692e] text-white rounded font-bold"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-5">
+              {/* Ô GHI CHÚ TOPPING TỰ DO */}
+              <div className="mt-5 border-t-2 border-dashed border-[#e6efd9] pt-4">
                 <label className="block text-xs font-bold uppercase text-[#6a8152] mb-2">
-                  Ghi chú (Có thể chọn nhiều)
+                  Ghi chú chi tiết cho từng phần
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {["Bỏ rau thơm", "Không cay"].map((opt) => (
-                    <button
-                      type="button"
-                      key={opt}
-                      onClick={() =>
-                        setSelectedToppings((p) =>
-                          p.includes(opt)
-                            ? p.filter((t) => t !== opt)
-                            : [...p, opt],
-                        )
-                      }
-                      className={`py-3 px-4 rounded-xl text-sm font-bold border-2 ${selectedToppings.includes(opt) ? "bg-[#4b692e] text-white border-[#4b692e]" : "bg-white text-[#40240c] border-[#e6efd9]"}`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
+                <textarea
+                  name="detailedNote"
+                  rows="3"
+                  placeholder="VD: Bánh 1 không cay, Bánh 2 bỏ rau thơm..."
+                  value={formData.detailedNote}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl bg-[#fdf1c3]/30 border-2 border-[#e6efd9] text-sm focus:outline-none focus:border-[#d87e33] font-medium placeholder:text-[#a3b19b]"
+                ></textarea>
               </div>
             </div>
 
@@ -523,6 +443,7 @@ export default function BanhMiOrderPage() {
                 <MapPin size={24} />{" "}
                 <span className="uppercase">Giao nhận</span>
               </div>
+
               <div>
                 <label className="block text-sm font-bold mb-2">
                   Phương thức nhận hàng *
@@ -545,9 +466,28 @@ export default function BanhMiOrderPage() {
                   <option value="Ship tận nơi ở cổng HUCE (đường Trần Đại Nghĩa)">
                     📍 Cổng HUCE
                   </option>
-                  <option value="Đặt ship">🛵 Đặt ship ngoài</option>
+                  <option value="Tự đặt ship">🛵 Tự đặt ship</option>
                 </select>
               </div>
+
+              {/* HIỆN Ô ĐỊA CHỈ NẾU CHỌN TỰ ĐẶT SHIP */}
+              {formData.deliveryMethod === "Tự đặt ship" && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-sm font-bold mb-2 text-[#d87e33]">
+                    Địa chỉ nhận hàng chi tiết *
+                  </label>
+                  <input
+                    type="text"
+                    name="shippingAddress"
+                    required
+                    placeholder="Nhập địa chỉ nhà, tòa nhà..."
+                    value={formData.shippingAddress}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl bg-white border-2 border-[#d87e33]/50 focus:outline-none focus:border-[#d87e33]"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="flex items-center gap-1.5 text-sm font-bold mb-2">
                   <Clock size={16} /> Thời gian nhận *
