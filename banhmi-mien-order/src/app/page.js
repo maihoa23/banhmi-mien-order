@@ -396,7 +396,7 @@ export default function BanhMiOrderPage() {
               </div>
               <MenuItem id="banh" name="Bánh mì miến" price={25} />
               <MenuItem id="mien" name="Miến xào" price={39} />
-              <MenuItem id="nuoc" name="Nước (Teago)" price={5} />
+              <MenuItem id="nuoc" name="Teago" price={5} />
 
               {/* NHÓM COMBO */}
               <div className="mt-6 mb-2">
@@ -406,19 +406,19 @@ export default function BanhMiOrderPage() {
               </div>
               <MenuItem
                 id="combo1"
-                name="Combo 1"
+                name="Combo PAPA"
                 desc="Bánh mì miến + Teago"
                 price={28}
               />
               <MenuItem
                 id="combo2"
-                name="Combo 2"
+                name="Combo TUTU"
                 desc="Miến xào + Teago"
                 price={42}
               />
               <MenuItem
                 id="comboBanThan"
-                name="Combo Bạn Thân"
+                name="Combo PAPATUTU"
                 desc="Bánh mì miến + Miến xào + 2 Teago"
                 price={67}
               />
