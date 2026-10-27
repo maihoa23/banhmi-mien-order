@@ -39,10 +39,11 @@ export default function BanhMiOrderPage() {
   const [fileName, setFileName] = useState("");
 
   // ================= CẤU HÌNH CỦA BẠN =================
-  const GOOGLE_SCRIPT_URL = "DÁN_URL_GOOGLE_SCRIPT_CỦA_BẠN_VÀO_ĐÂY";
+  const GOOGLE_SCRIPT_URL =
+    "https://script.google.com/macros/s/AKfycbxkBbQ0UE5mLENmQDixDVzctLdRVbkfh30ZWFafvSlQ_IdRONJqqaSLs9e6gCylhQKf/exec";
   const BANK_ID = "PVcomBank";
-  const ACCOUNT_NO = "0123456789";
-  const ACCOUNT_NAME = "NGUYEN VAN A";
+  const ACCOUNT_NO = "105004043276";
+  const ACCOUNT_NAME = "PHẠM HÀ THANH";
   // ====================================================
 
   const [formData, setFormData] = useState({
